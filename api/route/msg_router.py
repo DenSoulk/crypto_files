@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from api.sqlite_conf import user_session as session
+from api.sqlite_conf import msg_session as session
 from api.models.msg import Message
 from sqlalchemy import text
 
