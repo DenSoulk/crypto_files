@@ -2,7 +2,7 @@ import json
 from tkinter import *
 import tkinter
 from tkinter import ttk
-import requests 
+import requests
 
 class PlaceholderEntry(Entry):
     def __init__(self, master=None, placeholder="Введите текст", color='grey'):
@@ -31,68 +31,87 @@ class PlaceholderEntry(Entry):
             self.put_placeholder()
 
 def send_message():
-    message = entry.get()
-    if message:
-        chat_box.config(state=tkinter.NORMAL)
-        chat_box.insert(END, f"You: {message}\n")
-        chat_box.config(state=tkinter.DISABLED)
-        # save_message(message)
-        entry.delete(0, END)
-    
+    message = entry.get()  # Получаем текст из поля ввода
+    if message and message != entry.placeholder:  # Проверяем, что введенный текст не является плейсхолдером
+        # Отправляем сообщение на сервер
+        response = requests.post('http://localhost:5000/test', json={"text": message})
+        if response.status_code == 200:
+            chat_box.config(state=NORMAL)
+            chat_box.insert(END, f"Вы: {message}\n")
+            chat_box.config(state=DISABLED)
+            entry.delete(0, END)  # Очищаем поле ввода
+            entry.put_placeholder()  # Восстанавливаем плейсхолдер после очистки
+        else:
+            print("Error: Unable to send message")
 
+def update_chat_box(chat_data):
+    chat_box.config(state=NORMAL)
+    chat_box.delete(1.0, END)  # Очистка текущего текста
+    for message in chat_data["messages"]:
+        chat_box.insert(END, f"{message['user']}: {message['text']}\n")
+    chat_box.config(state=DISABLED)
 
-def rtyu():
-    chat_box.config(state=tkinter.NORMAL)
-    chat_box.insert(END, f"{b["ID"]}\n")
+def get_chat_history(chat_id):
+    response = requests.get(f'http://localhost:5000/test/{chat_id}')  # Замените на свой URL
+    if response.status_code == 200:
+        chat_data = response.json()
+        update_chat_box(chat_data)
+    else:
+        print("Error: Unable to fetch chat history")
 
+def fetch_chat_partners():
+    response = requests.get('http://localhost:5000/test')  # Замените на свой URL
+    if response.status_code == 200:
+        chat_data = response.json()
+        display_chat_partners(chat_data)
+    else:
+        print("Error: Unable to fetch chat partners")
 
+def display_chat_partners(chat_data):
+    for chat in chat_data["chats"]:
+        inside_frame = Frame(frame)
+        inside_frame.pack(fill=X, pady=5)
+
+        user = Label(inside_frame, text=chat["name"])
+        user.pack(side=LEFT, anchor=W, padx=5)
+
+        open_button = Button(inside_frame, text="перейти", command=lambda chat_id=chat["ID"]: get_chat_history(chat_id))
+        open_button.pack(side=RIGHT, padx=5)
 
 root = Tk()
 root.title("Your chat")
 
-# r = requests.get()     #Артем сам допишет
+try:
+    frame = Frame(root, bg="white", width=5)
+    frame.pack(side=LEFT, anchor=NW, padx=0, pady=0, fill=BOTH, expand=True) 
 
+    fetch_chat_partners()
 
+    send_button = Button(root, text="Отправить", command=send_message, cursor="hand2")
+    send_button.pack(side=RIGHT, anchor=SE, fill=X, padx=5, pady=5)
 
-a = {"count":[
-    { "name" : "Alice",
-     "ID": 162534
-    },
-    { "name" : "ice",
-     "ID": 654321
-    },
-    { "name" : "lice",
-     "ID": 123456
-    },]
-    }
+    entry = PlaceholderEntry(root, placeholder="Введите текст")  # Используем PlaceholderEntry
+    entry.pack(side=BOTTOM, fill=X, padx=5, pady=5)
 
+    chat_box = Text(root, cursor="hand2")
+    chat_box.config(state=DISABLED)
+    chat_box.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
 
-frame = Frame(root, bg="white", width= 5)
-frame.pack(side=LEFT, anchor=NW, padx=0, pady=0, fill=BOTH, expand=True)
+except:
+    frame = Frame(root, bg="white", width=5)
+    frame.pack(side=LEFT, anchor=NW, padx=0, pady=0, fill=BOTH, expand=True)
 
-for i in range(len(a["count"])):
-    inside_frame = Frame(frame)
-    inside_frame.pack(fill=X, pady=5)
+    send_button = Button(root, text="чекни инет", cursor="hand2")
+    send_button.pack(side=RIGHT, anchor=SE, fill=X, padx=5, pady=5)
 
-    b = a["count"][i]
+    entry = PlaceholderEntry(root, placeholder="ИНЕТА НЕМА")
+    entry.pack(side=BOTTOM, fill=X, padx=5, pady=5)
 
-    user = Label(inside_frame, text=b["name"])
-    user.pack(side=LEFT, anchor=W, padx=5)
+    chat_box = Text(root, cursor="hand2", bg ='red', font=('Arial', 40), height=10, width=50)
+    chat_box.config(state=NORMAL)
+    chat_box.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
 
-    # open_button = Button(inside_frame, text="перейти", command = lambda: requests.get(b["ID"]))
-    open_button = Button(inside_frame, text="перейти", command = rtyu)
-    open_button.pack(side=RIGHT, padx=5)
-
-
-
-send_button = Button(root, text="Отправить", command=send_message, cursor="hand2")
-send_button.pack(side=RIGHT, anchor=SE, fill=X, padx=5, pady=5)
-
-entry = PlaceholderEntry(root, placeholder="Введите текст")
-entry.pack(side=BOTTOM, fill=X, padx=5, pady=5)
-
-chat_box = Text(root, cursor="hand2")
-chat_box.config(state=tkinter.DISABLED)
-chat_box.pack(side=TOP, fill=BOTH, expand=True, padx = 5, pady = 5) 
+    chat_box.insert(1.0, "CHECK YOUR INTERNET CONNECTION")
+    chat_box.config(state=DISABLED)
 
 root.mainloop()
