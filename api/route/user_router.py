@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from api.sqlite_conf import user_session as session
 from api.models.user import User
 from sqlalchemy import text
-import sqlite3
 
 router = APIRouter()
 

@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 router = APIRouter()
 
-@router.get("/all_msg")
+@router.get("/msg")
 def get_all_msg():
     users = session.execute(text("SELECT * FROM message"))
     return [dict(user._mapping) for user in users]
