@@ -10,6 +10,11 @@ def get_user():
     users = session.execute(text("SELECT * FROM user"))
     return [dict(user._mapping) for user in users]
 
+@router.post("/user_by_id")
+def get_user_by_id(id_user: int):
+    users = session.execute(text(f'SELECT * FROM user WHERE id_user={id_user}'))
+    return [dict(user._mapping) for user in users]
+
 @router.post("/user")
 async def create_user(name: str, login: str, password: str):
     user = User(name=name, login=login, password=password)
