@@ -10,9 +10,9 @@ def get_user():
     users = session.execute(text("SELECT * FROM user"))
     return [dict(user._mapping) for user in users]
 
-@router.post("/user_by_id")
+@router.post("/user_by_id/{id_user}")
 def get_user_by_id(id_user: int):
-    users = session.execute(text(f'SELECT * FROM user WHERE id_user={id_user}'))
+    users = session.execute(text(f'SELECT * FROM user WHERE id={id_user}'))
     return [dict(user._mapping) for user in users]
 
 @router.post("/user")
